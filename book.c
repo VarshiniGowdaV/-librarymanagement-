@@ -37,10 +37,11 @@ void add_book()
     new_book->next = head;
     head = new_book;  // Add the new book at the beginning of the list
 
-    // Save all books to the file
+    // Save all books to the file immediately after adding
     save_books_to_file(head);
     printf("Book added successfully.\n");
 }
+
 
 void update_book_record(int book_id, const char* new_name, const char* new_author, int total_copies, int available_copies)
 {
@@ -70,7 +71,7 @@ void update_book_record(int book_id, const char* new_name, const char* new_autho
 
     if (book_found)
     {
-        // Save the updated list to the file
+        // Save the updated list to the file immediately after update
         save_books_to_file(head);
 
         // Provide feedback to the user
@@ -82,6 +83,7 @@ void update_book_record(int book_id, const char* new_name, const char* new_autho
         printf("Book with ID %d not found.\n", book_id);
     }
 }
+
 
 void remove_book(int book_id)
 {
