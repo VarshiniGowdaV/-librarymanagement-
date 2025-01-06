@@ -98,14 +98,13 @@ void update_staff(struct staff* head, int id) {
     printf("Staff updated successfully in the linked list.\n");
 
     // Now update the staff data in the file
-    FILE* file = fopen("staff.txt", "r+");
+    FILE* file = fopen("staff_data.txt", "r+");
     if (!file) {
         perror("Error opening staff file");
         return;
     }
 
     struct staff file_staff;
-    long pos;
     int found = 0;
     char temp_filename[] = "temp_staff.txt";  // Temporary file to store the updated content
     FILE* temp_file = fopen(temp_filename, "w");
@@ -117,13 +116,17 @@ void update_staff(struct staff* head, int id) {
     }
 
     // Read and rewrite the file content with updated staff
-    while (fscanf(file, "%d,%99[^,],%99[^,],%99[^,]\n", &file_staff.staff_id, file_staff.staff_name, file_staff.department, file_staff.position) != EOF) {
+    while (fscanf(file, "ID: %d, Name: %99[^,], Department: %99[^,], Position: %99[^\n]\n",
+                  &file_staff.staff_id, file_staff.staff_name, file_staff.department, file_staff.position) != EOF) {
         // Check if we found the staff in the file
         if (file_staff.staff_id == id) {
-            fprintf(temp_file, "%d,%s,%s,%s\n", temp->staff_id, temp->staff_name, temp->department, temp->position);
+            // Write updated staff data into the temporary file
+            fprintf(temp_file, "ID: %d, Name: %s, Department: %s, Position: %s\n",
+                    temp->staff_id, temp->staff_name, temp->department, temp->position);
             found = 1; // Mark that the update was successful
         } else {
-            fprintf(temp_file, "%d,%s,%s,%s\n", file_staff.staff_id, file_staff.staff_name, file_staff.department, file_staff.position);
+            fprintf(temp_file, "ID: %d, Name: %s, Department: %s, Position: %s\n",
+                    file_staff.staff_id, file_staff.staff_name, file_staff.department, file_staff.position);
         }
     }
 
@@ -132,15 +135,13 @@ void update_staff(struct staff* head, int id) {
 
     // Replace the old file with the updated one
     if (found) {
-        remove("staff.txt");
-        rename(temp_filename, "staff.txt");
+        remove("staff_data.txt");
+        rename(temp_filename, "staff_data.txt");
         printf("Staff updated successfully in the file.\n");
     } else {
         printf("Staff ID %d not found in file.\n", id);
     }
 }
-
-// Function to search for a staff member by ID
 struct staff* search_staff(struct staff* head, int staff_id) {
     struct staff* current = head;
 

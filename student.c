@@ -93,12 +93,16 @@ struct student* delete_student(struct student* head, int student_id) {
 // Function to update student details
 void update_student(struct student* head, int student_id, const char* new_name, const char* new_department) {
     struct student* temp = head;
+
+    // Traverse the linked list to find the student
     while (temp != NULL) {
         if (temp->student_id == student_id) {
+            // Update the student in memory
             strncpy(temp->name, new_name, MAX_NAME_LENGTH);
             strncpy(temp->department, new_department, MAX_DEPT_LENGTH);
             printf("Student information updated in memory.\n");
 
+            // Open the file for reading and updating
             FILE* file = fopen("students.txt", "r+");
             if (!file) {
                 perror("Error opening students file");
@@ -106,32 +110,46 @@ void update_student(struct student* head, int student_id, const char* new_name, 
             }
 
             struct student file_student;
-            long pos;
+            long pos = 0;
             int found = 0;
-            while (fscanf(file, "%d,%99[^,],%49[^,]\n", &file_student.student_id, file_student.name, file_student.department) != EOF) {
-                pos = ftell(file);
+            char temp_filename[] = "temp_students.txt";  // Temporary file to store updated content
+            FILE* temp_file = fopen(temp_filename, "w");
 
+            if (!temp_file) {
+                printf("Error opening temporary file.\n");
+                fclose(file);
+                return;
+            }
+
+            // Read each student record and rewrite it to the temporary file
+            while (fscanf(file, "%d,%99[^,],%49[^,]\n", &file_student.student_id, file_student.name, file_student.department) != EOF) {
+                // If the student is found, update their data
                 if (file_student.student_id == student_id) {
+                    fprintf(temp_file, "%d,%s,%s\n", student_id, new_name, new_department);
                     found = 1;
-                    break;
+                } else {
+                    // Otherwise, copy the existing data to the temporary file
+                    fprintf(temp_file, "%d,%s,%s\n", file_student.student_id, file_student.name, file_student.department);
                 }
             }
 
+            fclose(file);
+            fclose(temp_file);
+
+            // Replace the old file with the updated one
             if (found) {
-                fseek(file, pos - sizeof(file_student), SEEK_SET);
-                fprintf(file, "%d,%s,%s\n", student_id, new_name, new_department);
+                remove("students.txt");  // Remove the old file
+                rename(temp_filename, "students.txt");  // Rename the temporary file
                 printf("Student information updated in file.\n");
             } else {
                 printf("Student ID %d not found in file.\n", student_id);
             }
-
-            fclose(file);
             return;
         }
         temp = temp->next;
     }
 
-    printf("Student with ID %d not found.\n", student_id);
+    printf("Student with ID %d not found in the list.\n", student_id);
 }
 
 // Function to search for a student by student_id
