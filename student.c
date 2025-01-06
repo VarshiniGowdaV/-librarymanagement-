@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "student.h"
-
+#include "filehanding.h"
 // Function to create a new student node
 struct student* create_student_node(const char* name, int student_id, const char* dept) {
     struct student* new_student = (struct student*)malloc(sizeof(struct student));
@@ -48,37 +48,47 @@ struct student* add_student(struct student* head, const char* name, int student_
 }
 
 
-
-// Function to delete a student by student_id
-void delete_student(struct student* head, int student_id) {
+struct student* delete_student(struct student* head, int student_id) {
     if (head == NULL) {
         printf("No students to delete.\n");
-        return;
+        return head;
     }
 
     struct student* temp = head;
     struct student* prev = NULL;
 
+    // If the student to be deleted is the head
     if (temp != NULL && temp->student_id == student_id) {
-        head = temp->next;
-        free(temp);
-        return;
+        head = temp->next;  // Update head to the next student
+        free(temp);         // Free memory
+        rewrite_file(head); // Rewrite the updated list to file
+        printf("Student deleted successfully.\n");
+        return head;  // Return the new head
     }
 
+    // Search for the student to delete
     while (temp != NULL && temp->student_id != student_id) {
         prev = temp;
         temp = temp->next;
     }
 
+    // If student not found
     if (temp == NULL) {
         printf("Student with ID %d not found.\n", student_id);
-        return;
+        return head;
     }
 
+    // Unlink the node from the linked list
     prev->next = temp->next;
     free(temp);
+
+    // Rewrite the updated list to the file
+    rewrite_file(head);
     printf("Student deleted successfully.\n");
+
+    return head;  // Return the updated head
 }
+
 
 // Function to update student details
 void update_student(struct student* head, int student_id, const char* new_name, const char* new_department) {

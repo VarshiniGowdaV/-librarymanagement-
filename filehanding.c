@@ -56,7 +56,22 @@ void save_students_to_file(struct student* head)
 
     fclose(file);
 }
+// Function to delete a student by student_id
+void rewrite_file(struct student* head) {
+    FILE *file = fopen("students.txt", "w");
+    if (file == NULL) {
+        printf("Error opening file for writing.\n");
+        return;
+    }
 
+    struct student* temp = head;
+    while (temp != NULL) {
+        fprintf(file, "%d,%s,%s\n", temp->student_id, temp->name, temp->department);
+        temp = temp->next;
+    }
+
+    fclose(file);
+}
 void load_staff_from_file() {
     FILE* file = fopen("staff.txt", "r+");
     if (!file)
@@ -99,6 +114,22 @@ void save_staff_to_file(struct staff* head) {
 
     fclose(file);
 }
+void rewrite_staff_file(struct staff* head) {
+    FILE *file = fopen("staffs.txt", "w");
+    if (file == NULL) {
+        printf("Error opening file for writing.\n");
+        return;
+    }
+
+    struct staff* temp = head;
+    while (temp != NULL) {
+        fprintf(file, "%d,%s,%s,%s\n", temp->staff_id, temp->staff_name, temp->department, temp->position);
+        temp = temp->next;
+    }
+
+    fclose(file);
+}
+
 
 void load_borrowed_books_from_file() {
     FILE* file = fopen("borrowed_books.txt", "r+");

@@ -19,6 +19,8 @@ void save_students_to_file(struct student* student_head);
 void load_students_from_file();
 void save_staff_to_file(struct staff* staff_head);
 void load_staff_from_file();
+void rewrite_file(struct student* head);
+void rewrite_file_staff(struct staff* head);
 void save_borrowed_books_to_file(struct borrowedbook* borrowed_books_head);
 void load_borrowed_books_from_file();
 void save_returned_books_to_file(struct returnedbook* returned_books_head);

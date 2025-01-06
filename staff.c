@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "staff.h"
-
+#include "filehanding.h"
 // Function to add a new staff member
 struct staff* add_staff(struct staff* head, const char* name, int id, const char* department, const char* position) {
     struct staff* new_staff = malloc(sizeof(struct staff));
@@ -33,14 +33,21 @@ struct staff* add_staff(struct staff* head, const char* name, int id, const char
     return new_staff;
 }
 
-void delete_staff(struct staff* head, int id)
-{
-    struct staff *temp = head, *prev = NULL;
+// Function to delete a staff member from the linked list and update the file
+void delete_staff(struct staff* head, int id) {
+    if (head == NULL) {
+        printf("No staff to delete.\n");
+        return;
+    }
+
+    struct staff* temp = head;
+    struct staff* prev = NULL;
 
     // Check if the head itself holds the staff to be deleted
     if (temp != NULL && temp->staff_id == id) {
-        head = temp->next; // Move the head to the next staff member
-        free(temp);        // Free the memory of the old head
+        head = temp->next;  // Move the head to the next staff member
+        free(temp);         // Free the memory of the old head
+        rewrite_file(head); // Rewrite the updated list to file
         printf("Staff deleted successfully.\n");
         return;
     }
@@ -60,9 +67,11 @@ void delete_staff(struct staff* head, int id)
     // Unlink the staff node from the linked list
     prev->next = temp->next;
     free(temp);
+
+    // Rewrite the updated list to the file
+    rewrite_file(head);
     printf("Staff deleted successfully.\n");
 }
-
 
 // Function to update staff data both in the linked list and file
 void update_staff(struct staff* head, int id) {
@@ -130,6 +139,8 @@ void update_staff(struct staff* head, int id) {
         printf("Staff ID %d not found in file.\n", id);
     }
 }
+
+// Function to search for a staff member by ID
 struct staff* search_staff(struct staff* head, int staff_id) {
     struct staff* current = head;
 
@@ -142,6 +153,8 @@ struct staff* search_staff(struct staff* head, int staff_id) {
 
     return NULL;  // Return NULL if not found
 }
+
+// Function to view all staff members
 void view_staff(struct staff* head) {
     struct staff* temp = head;
     if (!temp) {

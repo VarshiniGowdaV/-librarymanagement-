@@ -14,7 +14,8 @@ struct student {
 // Function declarations
 struct student* create_student_node(const char* name, int student_id, const char* dept);
 struct student* add_student(struct student* head, const char* name, int student_id, const char* department);
-void delete_student(struct student* head, int student_id);
+struct student* delete_student(struct student* head, int student_id);
+
 void update_student(struct student* head, int student_id, const char* new_name, const char* new_department);
 struct student* search_student(struct student* head, int student_id);
 void view_students(struct student* head);
