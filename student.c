@@ -18,7 +18,6 @@ struct student* create_student_node(const char* name, int student_id, const char
     return new_student;
 }
 
-// Function to add a new student at the beginning of the list
 struct student* add_student(struct student* head, const char* name, int student_id, const char* department) {
     struct student* new_student = (struct student*)malloc(sizeof(struct student));
     if (new_student == NULL) {
@@ -31,8 +30,24 @@ struct student* add_student(struct student* head, const char* name, int student_
     strcpy(new_student->department, department);
     new_student->next = head;
 
+    // Open the file in append mode to add data to the file
+    FILE *file = fopen("students.txt", "a");
+    if (file == NULL) {
+        printf("Error opening file!\n");
+        free(new_student);
+        return head;
+    }
+
+    // Write the student's data to the file
+    fprintf(file, "%d,%s,%s\n", student_id, name, department);
+
+    // Close the file after writing
+    fclose(file);
+
     return new_student;
 }
+
+
 
 // Function to delete a student by student_id
 void delete_student(struct student* head, int student_id) {

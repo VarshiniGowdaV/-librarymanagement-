@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "book.h"
 #include "borrowedbook.h"
 #include "returnedbook.h"
@@ -9,8 +10,8 @@
 #include "sortbyauthor.h"
 #include "sortbybookname.h"
 #include "filehanding.h"
-
 struct book* book_head = NULL;
+//struct book* head = NULL;
 struct borrowedbook* borrowed_books_head = NULL;
 struct returnedbook* returned_books_head = NULL;
 struct staff* staff_head = NULL;
@@ -18,16 +19,14 @@ struct student* student_head = NULL;
 struct sortbyauthor* author_head = NULL;
 struct sortbybookname* book_name_head = NULL;
 extern int staff_count;
-extern int books_count;  // Declare the variable as external
 
-int books_count = 0;
+//int books_count = 0;
 int students_count = 0;
 int staff_count = 0;
 int borrowed_count = 0;
 int returned_count = 0;
 
-typedef enum
-{
+typedef enum {
     // Book Management
     ADD_BOOK = 1,
     REMOVE_BOOK,
@@ -61,6 +60,7 @@ typedef enum
     UPDATE_STAFF,
     SEARCH_STAFF,
     VIEW_STAFF,
+
 
     // Exit System
     EXIT
@@ -111,6 +111,11 @@ int main_menu() {
     int login_status;
     int user_role;
 
+    int books_count = 0;
+    int students_count=0;
+    int staff_count=0;
+    int borrowed_count=0;
+    int returned_count=0;
 
 
     printf("Data loaded successfully!\n");
@@ -126,43 +131,32 @@ int main_menu() {
     printf("Enter your choice: ");
     scanf("%d", &user_role);
 
-    if (user_role == 1)
-    {
+    if (user_role == 1) {
         login_status = authenticate_admin();
-        if (!login_status)
-        {
+        if (!login_status) {
             printf("Authentication failed. Exiting...\n");
             return 0;
         }
-    }
-    else if (user_role == 2)
-    {
+    } else if (user_role == 2) {
         login_status = authenticate_staff();
-        if (!login_status)
-        {
+        if (!login_status) {
             printf("Authentication failed. Exiting...\n");
             return 0;
         }
-    }
-    else if (user_role == 3)
-    {
+    } else if (user_role == 3) {
         login_status = authenticate_student();
-        if (!login_status)
-        {
+        if (!login_status) {
             printf("Authentication failed. Exiting...\n");
             return 0;
         }
-    }
-    else
-    {
+    } else {
         printf("Invalid choice. Exiting...\n");
         return 0;
     }
 
     do {
         display_menu();
-        if (scanf("%d", &choice) != 1)
-        {
+        if (scanf("%d", &choice) != 1) {
             printf("Invalid input. Please enter a number.\n");
             while (getchar() != '\n');
             continue;
@@ -170,20 +164,181 @@ int main_menu() {
 
         getchar();
 
-        switch ((MenuOption)choice)
-        {
-        case ADD_BOOK:
-            // Handle Add Book logic
+        switch ((MenuOption)choice) {
+        case ADD_BOOK: {
+            char book_name[100], author_name[100];
+            int  book_id,total_copies, available_copies;
+            printf("Enter book Id: ");
+            scanf("%d",&book_id);
+            printf("Enter book name: ");
+            scanf(" %[^\n]", book_name);
+            printf("Enter author name: ");
+            scanf(" %[^\n]", author_name);
+            printf("Enter total copies: ");
+            scanf("%d", &total_copies);
+            printf("Enter available copies: ");
+            scanf("%d", &available_copies);
+
+            struct book* new_book = malloc(sizeof(struct book));
+            if (new_book == NULL) {
+                printf("Memory allocation failed!\n");
+                break;
+            }
+
+            new_book->book_id = ++books_count;
+            strcpy(new_book->name, book_name);
+            strcpy(new_book->author, author_name);
+            new_book->total_copies = total_copies;
+            new_book->available_copies = available_copies;
+
+            new_book->next = head;
+            head = new_book;
+
+            //save_books_to_file(head);
+            printf("Book added successfully.\n");
             break;
-        case REMOVE_BOOK:
-            // Handle Remove Book logic
+        }
+        case UPDATE_BOOK: {
+            int book_id, total_copies, available_copies;
+            char new_name[100], new_author[100];
+
+            printf("Enter the book ID to update: ");
+            scanf("%d", &book_id);
+
+            printf("Enter the new book name: ");
+            scanf(" %[^\n]", new_name);  // Read string with spaces
+
+            printf("Enter the new author name: ");
+            scanf(" %[^\n]", new_author);  // Read string with spaces
+
+            printf("Enter the new total copies: ");
+            scanf("%d", &total_copies);
+
+            printf("Enter the new available copies: ");
+            scanf("%d", &available_copies);
+
+            update_book_record(book_id, new_name, new_author, total_copies, available_copies);
+
             break;
-        case UPDATE_BOOK:
-            // Handle Update Book logic
+        }
+
+
+        case REMOVE_BOOK: {
+            int book_id;
+            printf("Enter book ID to remove: ");
+            scanf("%d", &book_id);
+            remove_book( book_id);  // Pass the address of 'head' to update the list
+            display_books(head);          // Pass 'head' to display the updated list
             break;
+        }
+        case SEARCH_BOOK: {
+            char book_name[100];
+            printf("Enter the book name to search: ");
+            scanf(" %[s]", book_name);
+            struct book* found_book = search_book(book_name);
+            if (found_book != NULL) {
+                printf("Book found: %s by %s\n", found_book->name, found_book->author);
+            } else {
+                printf("Book not found.\n");
+            }
+            break;
+        }
         case VIEW_BOOKS:
-            // Handle View Books logic
+            display_books(head);  // Pass 'head' here as well
             break;
+        case RECORD_BORROWED_BOOK:
+            record_borrowed_book();
+            break;
+        case VIEW_BORROWED_BOOK:
+            view_borrowed_books();
+            break;
+        case RECORD_RETURNED_BOOK:
+            record_returned_book();
+            break;
+        case VIEW_RETURNED_BOOKS:
+            view_returned_books();
+            break;
+
+        case ADD_AUTHOR: {
+            char author_name[100];
+            printf("Enter the author's name: ");
+            scanf(" %[s]", author_name);
+            add_author(&author_head, author_name);
+            break;
+        }
+
+        case VIEW_AUTHORS:
+            view_authors(author_head);
+            break;
+
+        case SORT_AUTHORS:
+            sort_authors();
+            break;
+
+        case ADD_BOOK_NAME_SORTING:
+            int sort_order = 1;
+            add_book_name_sorting(book_name_head, sort_order);
+            break;
+
+        case VIEW_BOOKS_BY_NAME:
+            view_books_by_name(book_name_head);
+            break;
+
+        case ADD_STUDENT: {
+            char student_name[100], student_department[100];
+            int student_id;
+            printf("Enter student name: ");
+            scanf(" %[^\n]", student_name);
+            printf("Enter student ID: ");
+            scanf("%d", &student_id);
+            printf("Enter student department: ");
+            scanf(" %[^\n]", student_department);
+
+            // Ensure student_head is updated correctly
+            student_head = add_student(student_head, student_name, student_id, student_department);
+            break;
+        }
+        case DELETE_STUDENT: {
+            int student_id;
+            printf("Enter student ID to delete: ");
+            scanf("%d", &student_id);
+            delete_student(student_head, student_id);
+            break;
+        }
+
+        case UPDATE_STUDENT: {
+            int student_id;
+            char new_name[100], new_department[100];
+
+            printf("Enter student ID to update: ");
+            scanf("%d", &student_id);
+            printf("Enter new student name: ");
+            scanf(" %[^\n]", new_name);
+            printf("Enter new department: ");
+            scanf(" %[^\n]", new_department);
+            update_student(student_head, student_id, new_name, new_department);
+            break;
+        }
+
+        case SEARCH_STUDENT: {
+            int student_id;
+            printf("Enter student ID to search: ");
+            scanf("%d", &student_id);
+
+            struct student* found_student = search_student(student_head, student_id);
+
+            if (found_student != NULL) {
+                printf("Student found: %s\n", found_student->name);
+            } else {
+                printf("Student not found.\n");
+            }
+            break;
+        }
+
+        case VIEW_STUDENTS:
+            view_students(student_head);
+            break;
+
         case ADD_STAFF:
         {
             char name[100], department[50], position[50];
@@ -252,6 +407,7 @@ int main_menu() {
         case VIEW_STAFF:
             view_staff(staff_head);
             break;
+
 
 
         default:
