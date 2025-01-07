@@ -14,11 +14,11 @@ struct book* book_head = NULL;
 //struct book* head = NULL;
 struct borrowedbook* borrowed_books_head = NULL;
 struct returnedbook* returned_books_head = NULL;
-struct staff* staff_head = NULL;
-struct student* student_head = NULL;
+ struct staff* staff_head = NULL;
+ struct student* student_head = NULL;
 struct sortbyauthor* author_head = NULL;
 struct sortbybookname* book_name_head = NULL;
-extern int staff_count;
+ extern int staff_count;
 
 //int books_count = 0;
 int students_count = 0;
@@ -84,25 +84,25 @@ void display_menu() {
     printf("3. Author Management:\n");
     printf("   10. Add Author\n");
     printf("   11. View Authors\n");
-    printf("   12. Sort Authors Alphabetically\n");
+
 
     printf("4. Sorting Operations:\n");
-    printf("   13. Add Book Name for Sorting\n");
-    printf("   14. View Books by Name\n");
+    printf("   12. Add Book Name for Sorting\n");
+    printf("   13. View Books by Name\n");
 
     printf("5. User Management:\n");
-    printf("   15. Add Student\n");
-    printf("   16. delete student\n");
-    printf("   17. update student\n");
-    printf("   18. search student\n");
-    printf("   19. View Students\n");
-    printf("   20. Add Staff\n");
-    printf("   21. delete staff\n");
-    printf("   22. update staff\n");
-    printf("   23. search staff\n");
-    printf("   24. View Staff\n");
+    printf("   14. Add Student\n");
+    printf("   15. delete student\n");
+    printf("   16. update student\n");
+    printf("   17. search student\n");
+    printf("   18. View Students\n");
+    printf("   19. Add Staff\n");
+    printf("   20. delete staff\n");
+    printf("   21. update staff\n");
+    printf("   22. search staff\n");
+    printf("   23. View Staff\n");
 
-    printf("25. Exit\n");
+    printf("24. Exit\n");
     printf("Enter your choice: ");
 }
 
@@ -116,6 +116,12 @@ int main_menu() {
     int staff_count=0;
     int borrowed_count=0;
     int returned_count=0;
+
+     load_books_from_file();
+    load_students_from_file();
+    load_staff_from_file();
+    load_borrowed_books_from_file();
+   load_returned_books_from_file();
 
 
     printf("Data loaded successfully!\n");
@@ -194,7 +200,7 @@ int main_menu() {
             new_book->next = head;
             head = new_book;
 
-            //save_books_to_file(head);
+            save_books_to_file(head);
             printf("Book added successfully.\n");
             break;
         }
@@ -218,7 +224,7 @@ int main_menu() {
             scanf("%d", &available_copies);
 
             update_book_record(book_id, new_name, new_author, total_copies, available_copies);
-
+            save_books_to_file(book_head);
             break;
         }
 
@@ -227,8 +233,9 @@ int main_menu() {
             int book_id;
             printf("Enter book ID to remove: ");
             scanf("%d", &book_id);
-            remove_book( book_id);  // Pass the address of 'head' to update the list
-            display_books(head);          // Pass 'head' to display the updated list
+            remove_book( book_id);
+            display_books(head);
+            save_books_to_file(book_head);
             break;
         }
         case SEARCH_BOOK: {
@@ -248,12 +255,14 @@ int main_menu() {
             break;
         case RECORD_BORROWED_BOOK:
             record_borrowed_book();
+            save_borrowed_books_to_file(borrowed_books_head);
             break;
         case VIEW_BORROWED_BOOK:
             view_borrowed_books();
             break;
         case RECORD_RETURNED_BOOK:
             record_returned_book();
+            save_returned_books_to_file(returned_books_head);
             break;
         case VIEW_RETURNED_BOOKS:
             view_returned_books();
@@ -271,18 +280,17 @@ int main_menu() {
             view_authors(author_head);
             break;
 
-        case SORT_AUTHORS:
-            sort_authors();
-            break;
 
-        case ADD_BOOK_NAME_SORTING:
+
+        case ADD_BOOK_NAME_SORTING: {
             int sort_order = 1;
             add_book_name_sorting(book_name_head, sort_order);
             break;
-
-        case VIEW_BOOKS_BY_NAME:
+        }
+        case VIEW_BOOKS_BY_NAME: {
             view_books_by_name(book_name_head);
             break;
+        }
 
         case ADD_STUDENT: {
             char student_name[100], student_department[100];
@@ -296,6 +304,7 @@ int main_menu() {
 
             // Ensure student_head is updated correctly
             student_head = add_student(student_head, student_name, student_id, student_department);
+            save_students_to_file(student_head);
             break;
         }
         case DELETE_STUDENT: {
@@ -303,6 +312,7 @@ int main_menu() {
             printf("Enter student ID to delete: ");
             scanf("%d", &student_id);
             delete_student(student_head, student_id);
+            save_students_to_file(student_head);
             break;
         }
 
@@ -317,6 +327,7 @@ int main_menu() {
             printf("Enter new department: ");
             scanf(" %[^\n]", new_department);
             update_student(student_head, student_id, new_name, new_department);
+            save_students_to_file(student_head);
             break;
         }
 
@@ -361,6 +372,7 @@ int main_menu() {
 
             staff_head = add_staff(staff_head, name, id, department, position);
             printf("Staff data has been saved to staff_data.txt.\n");
+            save_staff_to_file(staff_head);
             break;
         }
 
@@ -370,6 +382,7 @@ int main_menu() {
             printf("Enter staff ID to delete: ");
             scanf("%d", &staff_id);
             delete_staff(staff_head, staff_id);
+            save_staff_to_file(staff_head);
             break;
         }
 
@@ -379,6 +392,7 @@ int main_menu() {
             printf("Enter staff ID to update: ");
             scanf("%d", &staff_id);
             update_staff(staff_head, staff_id);
+            save_staff_to_file(staff_head);
             break;
         }
 

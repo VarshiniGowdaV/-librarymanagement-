@@ -12,6 +12,11 @@
 #define STAFF_FILE "staff.txt"
 #define BORROWED_BOOKS_FILE "borrowed_books.txt"
 #define RETURNED_BOOKS_FILE "returned_books.txt"
+// struct book* load_books_from_file();
+// struct student* load_students_from_file();
+// struct staff* load_staff_from_file();
+// struct borrowedbook* load_borrowed_books_from_file();
+// struct returnedbook* load_returned_books_from_file();
 
 // void save_books_to_file(struct book* head);
 // void load_books_from_file();

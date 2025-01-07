@@ -49,7 +49,6 @@ void save_students_to_file(struct student* head)
 
     for (struct student* current = head; current; current = current->next)
     {
-        // Use fseek to set file pointer position
         long position = ftell(file); // Save position
         fprintf(file, "%s %d %s\n", current->name, current->student_id, current->department);
     }
@@ -72,6 +71,7 @@ void rewrite_file(struct student* head) {
 
     fclose(file);
 }
+//************************************************************************//
 void load_staff_from_file() {
     FILE* file = fopen("staff.txt", "r+");
     if (!file)
@@ -129,9 +129,11 @@ void rewrite_staff_file(struct staff* head) {
 
     fclose(file);
 }
+//*************************************************************************************//
 
 
-void load_borrowed_books_from_file() {
+void load_borrowed_books_from_file()
+{
     FILE* file = fopen("borrowed_books.txt", "r+");
     if (!file)
     {
@@ -150,6 +152,7 @@ void load_borrowed_books_from_file() {
         {
             break;
         }
+
         borrowed_books_head = add_borrowed_book(borrowed_books_head, student_id, book_id);
     }
 
@@ -174,7 +177,7 @@ void save_borrowed_books_to_file(struct borrowedbook* head)
 
     fclose(file);
 }
-
+//*************************************************************************************//
 void load_returned_books_from_file()
 {
     FILE* file = fopen("returned_books.txt", "r+");

@@ -3,7 +3,7 @@
 #include <string.h>
 #include "student.h"
 #include "filehanding.h"
-// Function to create a new student node
+
 struct student* create_student_node(const char* name, int student_id, const char* dept) {
     struct student* new_student = (struct student*)malloc(sizeof(struct student));
     if (new_student == NULL) {
@@ -30,7 +30,6 @@ struct student* add_student(struct student* head, const char* name, int student_
     strcpy(new_student->department, department);
     new_student->next = head;
 
-    // Open the file in append mode to add data to the file
     FILE *file = fopen("students.txt", "a");
     if (file == NULL) {
         printf("Error opening file!\n");
@@ -38,10 +37,8 @@ struct student* add_student(struct student* head, const char* name, int student_
         return head;
     }
 
-    // Write the student's data to the file
     fprintf(file, "%d,%s,%s\n", student_id, name, department);
 
-    // Close the file after writing
     fclose(file);
 
     return new_student;
@@ -59,50 +56,42 @@ struct student* delete_student(struct student* head, int student_id) {
 
     // If the student to be deleted is the head
     if (temp != NULL && temp->student_id == student_id) {
-        head = temp->next;  // Update head to the next student
-        free(temp);         // Free memory
-        rewrite_file(head); // Rewrite the updated list to file
+        head = temp->next;
+        free(temp);
+        rewrite_file(head);
         printf("Student deleted successfully.\n");
-        return head;  // Return the new head
+        return head;
     }
 
-    // Search for the student to delete
     while (temp != NULL && temp->student_id != student_id) {
         prev = temp;
         temp = temp->next;
     }
 
-    // If student not found
     if (temp == NULL) {
         printf("Student with ID %d not found.\n", student_id);
         return head;
     }
 
-    // Unlink the node from the linked list
     prev->next = temp->next;
     free(temp);
 
-    // Rewrite the updated list to the file
     rewrite_file(head);
     printf("Student deleted successfully.\n");
 
-    return head;  // Return the updated head
+    return head;
 }
 
 
-// Function to update student details
 void update_student(struct student* head, int student_id, const char* new_name, const char* new_department) {
     struct student* temp = head;
 
-    // Traverse the linked list to find the student
     while (temp != NULL) {
         if (temp->student_id == student_id) {
-            // Update the student in memory
             strncpy(temp->name, new_name, MAX_NAME_LENGTH);
             strncpy(temp->department, new_department, MAX_DEPT_LENGTH);
             printf("Student information updated in memory.\n");
 
-            // Open the file for reading and updating
             FILE* file = fopen("students.txt", "r+");
             if (!file) {
                 perror("Error opening students file");
@@ -112,7 +101,7 @@ void update_student(struct student* head, int student_id, const char* new_name, 
             struct student file_student;
             long pos = 0;
             int found = 0;
-            char temp_filename[] = "temp_students.txt";  // Temporary file to store updated content
+            char temp_filename[] = "Deleted_students.txt";
             FILE* temp_file = fopen(temp_filename, "w");
 
             if (!temp_file) {
@@ -121,14 +110,12 @@ void update_student(struct student* head, int student_id, const char* new_name, 
                 return;
             }
 
-            // Read each student record and rewrite it to the temporary file
             while (fscanf(file, "%d,%99[^,],%49[^,]\n", &file_student.student_id, file_student.name, file_student.department) != EOF) {
-                // If the student is found, update their data
+
                 if (file_student.student_id == student_id) {
                     fprintf(temp_file, "%d,%s,%s\n", student_id, new_name, new_department);
                     found = 1;
                 } else {
-                    // Otherwise, copy the existing data to the temporary file
                     fprintf(temp_file, "%d,%s,%s\n", file_student.student_id, file_student.name, file_student.department);
                 }
             }
@@ -136,10 +123,9 @@ void update_student(struct student* head, int student_id, const char* new_name, 
             fclose(file);
             fclose(temp_file);
 
-            // Replace the old file with the updated one
             if (found) {
-                remove("students.txt");  // Remove the old file
-                rename(temp_filename, "students.txt");  // Rename the temporary file
+                remove("students.txt");
+                rename(temp_filename, "students.txt");
                 printf("Student information updated in file.\n");
             } else {
                 printf("Student ID %d not found in file.\n", student_id);
@@ -152,7 +138,6 @@ void update_student(struct student* head, int student_id, const char* new_name, 
     printf("Student with ID %d not found in the list.\n", student_id);
 }
 
-// Function to search for a student by student_id
 struct student* search_student(struct student* head, int student_id) {
     struct student* temp = head;
 
@@ -166,7 +151,7 @@ struct student* search_student(struct student* head, int student_id) {
     return NULL;
 }
 
-// Function to view all students
+
 void view_students(struct student* head) {
     if (head == NULL) {
         printf("No students available.\n");

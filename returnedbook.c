@@ -4,7 +4,6 @@
 #include "returnedbook.h"
 //struct returnedbook* returned_books_head = NULL;
 
-// Function to add a returned book to the list
 struct returnedbook* add_returned_book(struct returnedbook* head, int student_id, int book_id, const char* date)
 {
     struct returnedbook* new_returned_book = (struct returnedbook*)malloc(sizeof(struct returnedbook));

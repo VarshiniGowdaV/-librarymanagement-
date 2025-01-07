@@ -11,14 +11,12 @@ struct staff* add_staff(struct staff* head, const char* name, int id, const char
         return head;
     }
 
-    // Fill staff data
     strcpy(new_staff->staff_name, name);
     strcpy(new_staff->department, department);
     strcpy(new_staff->position, position);
     new_staff->staff_id = id;
     new_staff->next = head;
 
-    // Open file in append mode to add staff details
     FILE* file = fopen("staff_data.txt", "a");
     if (file == NULL) {
         printf("Error opening file.\n");
@@ -26,14 +24,12 @@ struct staff* add_staff(struct staff* head, const char* name, int id, const char
         return head;
     }
 
-    // Write staff data to the file
     fprintf(file, "ID: %d, Name: %s, Department: %s, Position: %s\n", id, name, department, position);
     fclose(file);
 
     return new_staff;
 }
 
-// Function to delete a staff member from the linked list and update the file
 void delete_staff(struct staff* head, int id) {
     if (head == NULL) {
         printf("No staff to delete.\n");
@@ -43,41 +39,34 @@ void delete_staff(struct staff* head, int id) {
     struct staff* temp = head;
     struct staff* prev = NULL;
 
-    // Check if the head itself holds the staff to be deleted
     if (temp != NULL && temp->staff_id == id) {
-        head = temp->next;  // Move the head to the next staff member
-        free(temp);         // Free the memory of the old head
-        rewrite_file(head); // Rewrite the updated list to file
+        head = temp->next;
+        free(temp);
+        rewrite_file(head);
+
         printf("Staff deleted successfully.\n");
         return;
     }
 
-    // Search for the staff to delete
     while (temp != NULL && temp->staff_id != id) {
         prev = temp;
         temp = temp->next;
     }
 
-    // If the staff with the given ID was not found
     if (temp == NULL) {
         printf("Staff with ID %d not found.\n", id);
         return;
     }
 
-    // Unlink the staff node from the linked list
     prev->next = temp->next;
     free(temp);
 
-    // Rewrite the updated list to the file
     rewrite_file(head);
     printf("Staff deleted successfully.\n");
 }
 
-// Function to update staff data both in the linked list and file
 void update_staff(struct staff* head, int id) {
     struct staff* temp = head;
-
-    // Find the staff in the linked list by ID
     while (temp && temp->staff_id != id) {
         temp = temp->next;
     }
@@ -87,7 +76,6 @@ void update_staff(struct staff* head, int id) {
         return;
     }
 
-    // Update staff data in the linked list
     printf("Enter new name: ");
     scanf(" %[^\n]", temp->staff_name);
     printf("Enter new department: ");
@@ -97,7 +85,6 @@ void update_staff(struct staff* head, int id) {
 
     printf("Staff updated successfully in the linked list.\n");
 
-    // Now update the staff data in the file
     FILE* file = fopen("staff_data.txt", "r+");
     if (!file) {
         perror("Error opening staff file");
@@ -106,7 +93,7 @@ void update_staff(struct staff* head, int id) {
 
     struct staff file_staff;
     int found = 0;
-    char temp_filename[] = "temp_staff.txt";  // Temporary file to store the updated content
+    char temp_filename[] = "temp_staff.txt";
     FILE* temp_file = fopen(temp_filename, "w");
 
     if (!temp_file) {
@@ -115,25 +102,18 @@ void update_staff(struct staff* head, int id) {
         return;
     }
 
-    // Read and rewrite the file content with updated staff
-    while (fscanf(file, "ID: %d, Name: %99[^,], Department: %99[^,], Position: %99[^\n]\n",
-                  &file_staff.staff_id, file_staff.staff_name, file_staff.department, file_staff.position) != EOF) {
-        // Check if we found the staff in the file
+    while (fscanf(file, "ID: %d, Name: %99[^,], Department: %99[^,], Position: %99[^\n]\n",&file_staff.staff_id, file_staff.staff_name, file_staff.department, file_staff.position) != EOF) {
         if (file_staff.staff_id == id) {
-            // Write updated staff data into the temporary file
-            fprintf(temp_file, "ID: %d, Name: %s, Department: %s, Position: %s\n",
-                    temp->staff_id, temp->staff_name, temp->department, temp->position);
-            found = 1; // Mark that the update was successful
+            fprintf(temp_file, "ID: %d, Name: %s, Department: %s, Position: %s\n",temp->staff_id, temp->staff_name, temp->department, temp->position);
+            found = 1;
         } else {
-            fprintf(temp_file, "ID: %d, Name: %s, Department: %s, Position: %s\n",
-                    file_staff.staff_id, file_staff.staff_name, file_staff.department, file_staff.position);
+            fprintf(temp_file, "ID: %d, Name: %s, Department: %s, Position: %s\n", file_staff.staff_id, file_staff.staff_name, file_staff.department, file_staff.position);
         }
     }
 
     fclose(file);
     fclose(temp_file);
 
-    // Replace the old file with the updated one
     if (found) {
         remove("staff_data.txt");
         rename(temp_filename, "staff_data.txt");
@@ -147,12 +127,12 @@ struct staff* search_staff(struct staff* head, int staff_id) {
 
     while (current != NULL) {
         if (current->staff_id == staff_id) {
-            return current;  // Return the staff member if found
+            return current;
         }
         current = current->next;
     }
 
-    return NULL;  // Return NULL if not found
+    return NULL;
 }
 
 // Function to view all staff members
@@ -169,7 +149,7 @@ void view_staff(struct staff* head) {
     }
 }
 
-// Function to count the number of staff members in the list
+
 int count_staff(struct staff* head) {
     int count = 0;
     struct staff* temp = head;

@@ -12,9 +12,5 @@ struct sortbyauthor {
 struct sortbyauthor* create_author_node(const char* author_name);
 struct sortbyauthor* add_author(struct sortbyauthor* head, const char* author_name);
 void view_authors(struct sortbyauthor* head);
-void sort_authors();
-void merge_sort(struct sortbyauthor* head);
-struct sortbyauthor* split_list(struct sortbyauthor* head);
-struct sortbyauthor* merge_sorted_lists(struct sortbyauthor* left, struct sortbyauthor* right);
 
 #endif

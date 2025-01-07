@@ -29,20 +29,36 @@ struct sortbybookname* create_book_node(const char* book_name)
 
 struct sortbybookname* add_book_name(struct sortbybookname* head, const char* book_name)
 {
+    // Create a new node with the given book name
     struct sortbybookname* new_node = create_book_node(book_name);
+
+    // If the list is empty, return the new node as the head
     if (head == NULL)
     {
         return new_node;
     }
+
+    // If the new book's name should be the first in the list
+    if (strcmp(book_name, head->book_name) < 0)
+    {
+        new_node->next = head;
+        return new_node;
+    }
+
+    // Traverse the list to find the insertion point
     struct sortbybookname* temp = head;
-    while (temp->next != NULL)
+    while (temp->next != NULL && strcmp(book_name, temp->next->book_name) > 0)
     {
         temp = temp->next;
     }
+
+    // Insert the new node at the correct position
+    new_node->next = temp->next;
     temp->next = new_node;
 
     return head;
 }
+
 
 void add_book_name_sorting(struct sortbybookname *book_name_head, int sort_order)
 {
