@@ -1,32 +1,27 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(librarymanagement LANGUAGES C)
+project(------librarymanagement------ LANGUAGES C)
 
-add_executable(librarymanagement main.c
-    admin.c
-    admin.h
-    book.c
-    book.h
-    borrowedbook.h
-    borrowedbook.c
-    filehanding.h
-    filehanding.c
-    main1.h
-    main1.c
-    returnedbook.h
-    returnedbook.c
-    sortbyauthor.h
-    sortbyauthor.c
-    sortbybookname.h
-    sortbybookname.c
-    staff.h
-    staff.c
+add_executable(------librarymanagement------ main.c
     student.h
     student.c
-)
+    main1.c
+    main1.h
+    filehanding.h
+    filehanding.c
+    book.h
+    book.c
+    staff.h
+    staff.c
+    borrowedbook.h
+    borrowedbook.c
+    retunedbook.h
+    retunedbook.c
+    admin.h
+    admin.c)
 
 include(GNUInstallDirs)
-install(TARGETS librarymanagement
+install(TARGETS ------librarymanagement------
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )

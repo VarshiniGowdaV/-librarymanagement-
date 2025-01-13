@@ -2,244 +2,167 @@
 #include <stdlib.h>
 #include <string.h>
 #include "book.h"
-#include "filehanding.h"
 
-#define BOOKS_FILE "books_data.txt"
+struct book* book_head = NULL;
 
-struct book* head = NULL;
-
-void add_book() {
+struct book* add_book(struct book* book_head, char* name, char* title, int book_id, char* author) {
+    // Allocate memory for a new book
     struct book* new_book = (struct book*)malloc(sizeof(struct book));
-    if (new_book == NULL) {
-        printf("Memory allocation failed.\n");
-        return;
+    if (!new_book) {
+        printf("Memory allocation failed!\n");
+        return book_head; // Return the current head if allocation fails
     }
 
-    printf("Enter Book ID: ");
-    if (scanf("%d", &new_book->book_id) != 1) {
-        printf("Invalid input for Book ID.\n");
-        free(new_book);
-        return;
-    }
-    getchar();
+    // Set the values of the new book
+    new_book->book_id = book_id;
+    strncpy(new_book->name, name, MAX_NAME_LENGTH);
+    strncpy(new_book->author, author, MAX_AUTHOR_LENGTH);
+    strncpy(new_book->title, title, MAX_TITLE_LENGTH);
+    new_book->total_copies = 0; // Default, adjust as needed
+    new_book->available_copies = 0; // Default, adjust as needed
+    new_book->deleted = 0; // New books are not deleted by default
+    new_book->next = NULL; // Set the next pointer to NULL
 
-    printf("Enter Book Name: ");
-    if (fgets(new_book->name, sizeof(new_book->name), stdin) == NULL) {
-        printf("Failed to read Book Name.\n");
-        free(new_book);
-        return;
-    }
-    new_book->name[strcspn(new_book->name, "\n")] = '\0';
-
-    printf("Enter Author Name: ");
-    if (fgets(new_book->author, sizeof(new_book->author), stdin) == NULL) {
-        printf("Failed to read Author Name.\n");
-        free(new_book);
-        return;
-    }
-    new_book->author[strcspn(new_book->author, "\n")] = '\0';
-
-    printf("Enter Total Copies: ");
-    if (scanf("%d", &new_book->total_copies) != 1 || new_book->total_copies < 0) {
-        printf("Invalid input for Total Copies.\n");
-        free(new_book);
-        return;
-    }
-
-    new_book->available_copies = new_book->total_copies;
-    new_book->next = NULL;
-
-    if (head == NULL) {
-        head = new_book;
+    // Add the new book to the linked list
+    if (book_head == NULL) {
+        book_head = new_book; // If the list is empty, new book becomes the head
     } else {
-        struct book* temp = head;
-        while (temp->next != NULL) {
-            temp = temp->next;
+        struct book* current = book_head;
+        while (current->next != NULL) {
+            current = current->next;
         }
-        temp->next = new_book;
+        current->next = new_book; // Add the new book at the end
     }
-    save_books_to_file(head);
 
-    printf("Book added and saved to file successfully.\n");
+    return book_head; // Return the updated head of the list
 }
 
-void update_specific_field(struct book* head, int book_id, const char* field, const void* value) {
-    struct book* book_to_update = search_book_by_id(book_id);
 
-    if (book_to_update == NULL) {
-        printf("Book with ID %d not found.\n", book_id);
-        return;
-    }
 
-    if (strcmp(field, "name") == 0) {
-        strncpy(book_to_update->name, (char*)value, sizeof(book_to_update->name) - 1);
-        book_to_update->name[sizeof(book_to_update->name) - 1] = '\0';
-    } else if (strcmp(field, "author") == 0) {
-        strncpy(book_to_update->author, (char*)value, sizeof(book_to_update->author) - 1);
-        book_to_update->author[sizeof(book_to_update->author) - 1] = '\0';
-    } else if (strcmp(field, "total_copies") == 0) {
-        book_to_update->total_copies = *(int*)value;
-        if (book_to_update->available_copies > book_to_update->total_copies) {
-            book_to_update->available_copies = book_to_update->total_copies;
+// Function to update a book's information
+void update_book() {
+    int book_id;
+    printf("Enter book ID to update: ");
+    scanf("%d", &book_id);
+
+    struct book* current = book_head;
+    while (current != NULL) {
+        if (current->book_id == book_id) {
+            printf("Enter new book name: ");
+            getchar();  // Consume newline character
+            fgets(current->name, MAX_NAME_LENGTH, stdin);
+            current->name[strcspn(current->name, "\n")] = '\0';  // Remove newline
+
+            printf("Enter new author name: ");
+            fgets(current->author, MAX_AUTHOR_LENGTH, stdin);
+            current->author[strcspn(current->author, "\n")] = '\0';  // Remove newline
+
+            printf("Enter new book title: ");
+            fgets(current->title, 100, stdin);
+            current->title[strcspn(current->title, "\n")] = '\0';  // Remove newline
+
+            printf("Enter new total copies: ");
+            scanf("%d", &current->total_copies);
+            current->available_copies = current->total_copies;  // Reset available copies
+
+            printf("Book updated successfully.\n");
+            return;
         }
-    } else if (strcmp(field, "available_copies") == 0) {
-        book_to_update->available_copies = *(int*)value;
-        if (book_to_update->available_copies > book_to_update->total_copies) {
-            printf("Available copies cannot exceed total copies. Adjusting available copies.\n");
-            book_to_update->available_copies = book_to_update->total_copies;
-        }
-    } else {
-        printf("Invalid field name: %s\n", field);
-        return;
+        current = current->next;
     }
 
-    printf("Book with ID %d updated successfully in memory.\n", book_id);
-
-    // Save updated data to the file
-    save_books_to_file(head);
-    printf("Book with ID %d updated successfully in file.\n", book_id);
-}
-void update_book_record(int book_id, const char* new_name, const char* new_author, int total_copies, int available_copies) {
-    struct book* book_to_update = search_book_by_id(book_id);
-
-    if (book_to_update == NULL) {
-        printf("Book with ID %d not found.\n", book_id);
-        return;
-    }
-
-    if (new_name) {
-        strncpy(book_to_update->name, new_name, sizeof(book_to_update->name) - 1);
-        book_to_update->name[sizeof(book_to_update->name) - 1] = '\0';
-    }
-
-    if (new_author) {
-        strncpy(book_to_update->author, new_author, sizeof(book_to_update->author) - 1);
-        book_to_update->author[sizeof(book_to_update->author) - 1] = '\0';
-    }
-
-    book_to_update->total_copies = total_copies;
-
-    if (available_copies > total_copies) {
-        printf("Available copies cannot exceed total copies. Adjusting to total copies.\n");
-        book_to_update->available_copies = total_copies;
-    } else {
-        book_to_update->available_copies = available_copies;
-    }
-
-    printf("Book with ID %d updated successfully.\n", book_id);
-    save_books_to_file(head);
+    printf("Book with ID %d not found.\n", book_id);
 }
 
-void remove_book(int book_id) {
-    struct book* current = head;
+// Function to delete a book by setting the deleted flag
+void delete_book() {
+    int book_id;
+    printf("Enter book ID to delete: ");
+    scanf("%d", &book_id);
+
+    struct book* current = book_head;
     struct book* prev = NULL;
 
-    while (current != NULL && current->book_id != book_id) {
+    while (current != NULL) {
+        if (current->book_id == book_id) {
+            current->deleted = 1;  // Mark as deleted (soft delete)
+            printf("Book with ID %d marked as deleted.\n", book_id);
+            return;
+        }
         prev = current;
         current = current->next;
     }
 
-    if (current == NULL) {
-        printf("Book with ID %d not found.\n", book_id);
-        return;
-    }
-
-    if (prev == NULL) {
-        head = current->next;
-    } else {
-        prev->next = current->next;
-    }
-
-    free(current);
-    save_books_to_file(head);
-    printf("Book with ID %d removed successfully.\n", book_id);
+    printf("Book with ID %d not found.\n", book_id);
 }
 
-void display_books() {
-    struct book* current = head;
-    if (!current) {
-        printf("No books available.\n");
-        return;
-    }
+// Function to remove a book from the list (hard delete)
+void remove_book(int book_id) {
+    struct book* current = book_head;
+    struct book* prev = NULL;
 
-    while (current) {
-        printf("ID: %d, Name: %s, Author: %s, Total Copies: %d, Available Copies: %d\n",
-               current->book_id, current->name, current->author, current->total_copies, current->available_copies);
-        current = current->next;
-    }
-}
-
-struct book* search_book(const char* book_name) {
-    struct book* current = head;
-    while (current) {
-        if (strcmp(current->name, book_name) == 0) {
-            return current;
+    while (current != NULL) {
+        if (current->book_id == book_id) {
+            if (prev == NULL) {
+                book_head = current->next;  // Deleting the first node
+            } else {
+                prev->next = current->next;
+            }
+            free(current);
+            printf("Book with ID %d deleted from list.\n", book_id);
+            return;
         }
+        prev = current;
         current = current->next;
     }
-    return NULL;
+
+    printf("Book with ID %d not found.\n", book_id);
 }
 
+// Function to search for a book by ID
 struct book* search_book_by_id(int book_id) {
-    struct book* current = head;
-    while (current) {
+    struct book* current = book_head;
+    while (current != NULL) {
         if (current->book_id == book_id) {
             return current;
         }
         current = current->next;
     }
+    return NULL;  // Not found
+}
+
+// Function to search for a book by name or author
+struct book* search_book() {
+    char search_term[MAX_NAME_LENGTH];
+    printf("Enter book name or author to search: ");
+    getchar();  // Consume newline character
+    fgets(search_term, MAX_NAME_LENGTH, stdin);
+    search_term[strcspn(search_term, "\n")] = '\0';  // Remove newline
+
+    struct book* current = book_head;
+    while (current != NULL) {
+        if (strstr(current->name, search_term) != NULL || strstr(current->author, search_term) != NULL) {
+            return current;
+        }
+        current = current->next;
+    }
     return NULL;
 }
 
-struct book* load_books_from_file() {
-    FILE* file = fopen(BOOKS_FILE, "r");
-    if (file == NULL) {
-        printf("Error opening file for reading books.\n");
-        return NULL;
-    }
-
-    struct book* head = NULL;
-    struct book* temp = NULL;
-    int book_id, total_copies, available_copies;
-    char name[100], author[100];
-
-    while (fscanf(file, "%d|%99[^|]|%99[^|]|%d|%d\n", &book_id, name, author, &total_copies, &available_copies) == 5) {
-        struct book* new_book = malloc(sizeof(struct book));
-        new_book->book_id = book_id;
-        strncpy(new_book->name, name, sizeof(new_book->name) - 1);
-        new_book->name[sizeof(new_book->name) - 1] = '\0';
-        strncpy(new_book->author, author, sizeof(new_book->author) - 1);
-        new_book->author[sizeof(new_book->author) - 1] = '\0';
-        new_book->total_copies = total_copies;
-        new_book->available_copies = available_copies;
-        new_book->next = NULL;
-
-        if (head == NULL) {
-            head = new_book;
-        } else {
-            temp->next = new_book;
-        }
-        temp = new_book;
-    }
-
-    fclose(file);
-    return head;
-}
-
-void save_books_to_file(struct book* head) {
-    FILE* file = fopen(BOOKS_FILE, "r+");
-    if (file == NULL) {
-        printf("Error opening file for saving books.\n");
+// Function to display all books
+void display_books() {
+    struct book* current = book_head;
+    if (current == NULL) {
+        printf("No books available.\n");
         return;
     }
 
-    struct book* current = head;
+    printf("List of books:\n");
     while (current != NULL) {
-        fprintf(file, "%d|%s|%s|%d|%d\n",
-                current->book_id, current->name, current->author,
-                current->total_copies, current->available_copies);
+        if (current->deleted == 0) {  // Display only non-deleted books
+            printf("ID: %d, Name: %s, Author: %s, Title: %s, Total Copies: %d, Available Copies: %d\n",
+                   current->book_id, current->name, current->author, current->title, current->total_copies, current->available_copies);
+        }
         current = current->next;
     }
-
-    fclose(file);
 }

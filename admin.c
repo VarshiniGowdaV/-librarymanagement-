@@ -2,46 +2,31 @@
 #include <string.h>
 #include "admin.h"
 
-int authenticate_user(const char *correct_username, const char *correct_password, const char *role)
-{
+// Function to authenticate a user based on username, password, and role
+int authenticate_user(const char *correct_username, const char *correct_password, const char *role) {
     char entered_username[50];
     char entered_password[50];
 
-    printf("%s Login\n", role);
-    printf("Enter username: ");
-    scanf("%s", entered_username);
-    printf("Enter password: ");
-    scanf("%s", entered_password);
+    printf("Enter username for %s: ", role);
+    fgets(entered_username, sizeof(entered_username), stdin);
+    entered_username[strcspn(entered_username, "\n")] = '\0';  // Remove newline character
 
-    if (strcmp(entered_username, correct_username) == 0 && strcmp(entered_password, correct_password) == 0)
-    {
-        printf("Login successful.\n");
-        return 1;
-    }
-    else
-    {
-        printf("Invalid username or password.\n");
-        return 0;
+    printf("Enter password for %s: ", role);
+    fgets(entered_password, sizeof(entered_password), stdin);
+    entered_password[strcspn(entered_password, "\n")] = '\0';  // Remove newline character
+
+    // Compare entered credentials with the correct ones
+    if (strcmp(entered_username, correct_username) == 0 && strcmp(entered_password, correct_password) == 0) {
+        return 1;  // Authentication successful
+    } else {
+        return 0;  // Authentication failed
     }
 }
 
-int authenticate_admin()
-{
-    const char *correct_username = "admin";
-    const char *correct_password = "password123";
-    return authenticate_user(correct_username, correct_password, "Admin");
-}
+// Function to authenticate an admin (specific username and password for admin role)
+int authenticate_admin() {
+    const char *admin_username = "admin";
+    const char *admin_password = "admin123";  // Change this to a more secure password if necessary
 
-int authenticate_staff()
-{
-    const char *correct_username = "staff";
-    const char *correct_password = "staff123";
-    return authenticate_user(correct_username, correct_password, "Staff");
-}
-
-int authenticate_student()
-{
-    const char *correct_username = "student";
-    const char *correct_password = "student123";
-    return authenticate_user(correct_username, correct_password, "Student");
+    return authenticate_user(admin_username, admin_password, "admin");
 }

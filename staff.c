@@ -2,160 +2,172 @@
 #include <stdlib.h>
 #include <string.h>
 #include "staff.h"
-#include "filehanding.h"
-// Function to add a new staff member
-struct staff* add_staff(struct staff* head, const char* name, int id, const char* department, const char* position) {
-    struct staff* new_staff = malloc(sizeof(struct staff));
+struct staff* staff_head = NULL;
+
+struct staff* add_staff(struct staff* staff_head, const char* name, int staff_id, const char* department) {
+    struct staff* new_staff = (struct staff*)malloc(sizeof(struct staff));
     if (!new_staff) {
-        printf("Memory allocation failed.\n");
-        return head;
+        printf("Memory allocation failed!\n");
+        return staff_head;
     }
 
-    strcpy(new_staff->staff_name, name);
-    strcpy(new_staff->department, department);
-    strcpy(new_staff->position, position);
-    new_staff->staff_id = id;
-    new_staff->next = head;
+    // Set values for the new staff member
+    strncpy(new_staff->name, name, MAX_NAME_LENGTH - 1);
+    new_staff->name[MAX_NAME_LENGTH - 1] = '\0';
+    new_staff->staff_id = staff_id;
+    strncpy(new_staff->department, department, MAX_DEPARTMENT_LENGTH - 1);
+    new_staff->department[MAX_DEPARTMENT_LENGTH - 1] = '\0';
+    new_staff->next = NULL;
 
-    FILE* file = fopen("staff_data.txt", "a");
-    if (file == NULL) {
-        printf("Error opening file.\n");
-        free(new_staff);
-        return head;
-    }
-
-    fprintf(file, "ID: %d, Name: %s, Department: %s, Position: %s\n", id, name, department, position);
-    fclose(file);
-
-    return new_staff;
-}
-
-void delete_staff(struct staff* head, int id) {
-    if (head == NULL) {
-        printf("No staff to delete.\n");
-        return;
-    }
-
-    struct staff* temp = head;
-    struct staff* prev = NULL;
-
-    if (temp != NULL && temp->staff_id == id) {
-        head = temp->next;
-        free(temp);
-        rewrite_file(head);
-
-        printf("Staff deleted successfully.\n");
-        return;
-    }
-
-    while (temp != NULL && temp->staff_id != id) {
-        prev = temp;
-        temp = temp->next;
-    }
-
-    if (temp == NULL) {
-        printf("Staff with ID %d not found.\n", id);
-        return;
-    }
-
-    prev->next = temp->next;
-    free(temp);
-
-    rewrite_file(head);
-    printf("Staff deleted successfully.\n");
-}
-
-void update_staff(struct staff* head, int id) {
-    struct staff* temp = head;
-    while (temp && temp->staff_id != id) {
-        temp = temp->next;
-    }
-
-    if (!temp) {
-        printf("Staff with ID %d not found in linked list.\n", id);
-        return;
-    }
-
-    printf("Enter new name: ");
-    scanf(" %[^\n]", temp->staff_name);
-    printf("Enter new department: ");
-    scanf(" %[^\n]", temp->department);
-    printf("Enter new position: ");
-    scanf(" %[^\n]", temp->position);
-
-    printf("Staff updated successfully in the linked list.\n");
-
-    FILE* file = fopen("staff_data.txt", "r+");
-    if (!file) {
-        perror("Error opening staff file");
-        return;
-    }
-
-    struct staff file_staff;
-    int found = 0;
-    char temp_filename[] = "temp_staff.txt";
-    FILE* temp_file = fopen(temp_filename, "w");
-
-    if (!temp_file) {
-        printf("Error opening temporary file.\n");
-        fclose(file);
-        return;
-    }
-
-    while (fscanf(file, "ID: %d, Name: %99[^,], Department: %99[^,], Position: %99[^\n]\n",&file_staff.staff_id, file_staff.staff_name, file_staff.department, file_staff.position) != EOF) {
-        if (file_staff.staff_id == id) {
-            fprintf(temp_file, "ID: %d, Name: %s, Department: %s, Position: %s\n",temp->staff_id, temp->staff_name, temp->department, temp->position);
-            found = 1;
-        } else {
-            fprintf(temp_file, "ID: %d, Name: %s, Department: %s, Position: %s\n", file_staff.staff_id, file_staff.staff_name, file_staff.department, file_staff.position);
-        }
-    }
-
-    fclose(file);
-    fclose(temp_file);
-
-    if (found) {
-        remove("staff_data.txt");
-        rename(temp_filename, "staff_data.txt");
-        printf("Staff updated successfully in the file.\n");
+    // Add the new staff member to the list
+    if (staff_head == NULL) {
+        staff_head = new_staff;
     } else {
-        printf("Staff ID %d not found in file.\n", id);
+        struct staff* current = staff_head;
+        while (current->next != NULL) {
+            current = current->next;
+        }
+        current->next = new_staff;
     }
-}
-struct staff* search_staff(struct staff* head, int staff_id) {
-    struct staff* current = head;
 
+    return staff_head;
+}
+
+
+// Delete a staff member by ID
+void delete_staff(struct staff* head, int id) {
+    struct staff *current = head, *previous = NULL;
+    while (current != NULL) {
+        if (current->staff_id == id) {
+            if (previous == NULL) {
+                head = current->next;  // If the staff to be deleted is the head
+            } else {
+                previous->next = current->next;  // Bypass the staff node
+            }
+            free(current);
+            printf("Staff with ID %d deleted.\n", id);
+            return;
+        }
+        previous = current;
+        current = current->next;
+    }
+    printf("Staff with ID %d not found.\n", id);
+}
+
+void update_staff(struct staff* head, int staff_id, const char* staff_name, const char* staff_department) {
+    struct staff* current = head;
     while (current != NULL) {
         if (current->staff_id == staff_id) {
-            return current;
+            strncpy(current->name, staff_name, MAX_NAME_LENGTH);
+            strncpy(current->department, staff_department, MAX_DEPT_LENGTH);
+            printf("Staff updated: ID: %d, Name: %s, Department: %s\n",
+                   current->staff_id, current->name, current->department);
+            return;
         }
         current = current->next;
     }
-
-    return NULL;
+    printf("Staff with ID %d not found.\n", staff_id);
 }
 
-// Function to view all staff members
+
+// Search for a staff member by ID
+struct staff* search_staff(struct staff* head, int id) {
+    struct staff* current = head;
+    while (current != NULL) {
+        if (current->staff_id == id) {
+            return current;  // Return the found staff member
+        }
+        current = current->next;
+    }
+    return NULL;  // Staff not found
+}
+
+// View all staff members
 void view_staff(struct staff* head) {
-    struct staff* temp = head;
-    if (!temp) {
+    struct staff* current = head;
+    if (current == NULL) {
         printf("No staff records available.\n");
         return;
     }
-    printf("Staff Records:\n");
-    while (temp) {
-        printf("ID: %d, Name: %s, Department: %s, Position: %s\n", temp->staff_id, temp->staff_name, temp->department, temp->position);
-        temp = temp->next;
+
+    printf("Staff details:\n");
+    while (current != NULL) {
+        // Corrected: Use 'name' instead of 'staff_name'
+        printf("ID: %d, Name: %s, Department: %s, Position: %s\n",
+               current->staff_id, current->name, current->department, current->position);
+        current = current->next;
     }
 }
 
 
-int count_staff(struct staff* head) {
+// Sort staff by name (alphabetical order)
+void sortStaffByName(struct staff* head) {
+    struct staff *current, *next_node;
+    char temp_name[MAX_NAME_LENGTH], temp_department[MAX_DEPARTMENT_LENGTH], temp_position[50];
+    int temp_id;
+
+    for (current = head; current != NULL; current = current->next) {
+        for (next_node = current->next; next_node != NULL; next_node = next_node->next) {
+            // Use 'name' instead of 'staff_name'
+            if (strcmp(current->name, next_node->name) > 0) {
+                // Swap staff data
+                temp_id = current->staff_id;
+                current->staff_id = next_node->staff_id;
+                next_node->staff_id = temp_id;
+
+                strncpy(temp_name, current->name, sizeof(temp_name));
+                strncpy(current->name, next_node->name, sizeof(current->name));
+                strncpy(next_node->name, temp_name, sizeof(next_node->name));
+
+                strncpy(temp_department, current->department, sizeof(temp_department));
+                strncpy(current->department, next_node->department, sizeof(current->department));
+                strncpy(next_node->department, temp_department, sizeof(next_node->department));
+
+                strncpy(temp_position, current->position, sizeof(temp_position));
+                strncpy(current->position, next_node->position, sizeof(current->position));
+                strncpy(next_node->position, temp_position, sizeof(next_node->position));
+            }
+        }
+    }
+}
+// Sort staff by ID (ascending order)
+void sortStaffById(struct staff* head) {
+    struct staff *current, *next_node;
+    int temp_id;
+    char temp_name[MAX_NAME_LENGTH], temp_department[MAX_DEPARTMENT_LENGTH], temp_position[50];
+
+    for (current = head; current != NULL; current = current->next) {
+        for (next_node = current->next; next_node != NULL; next_node = next_node->next) {
+            if (current->staff_id > next_node->staff_id) {
+                // Swap staff data
+                temp_id = current->staff_id;
+                current->staff_id = next_node->staff_id;
+                next_node->staff_id = temp_id;
+
+                // Use 'name' instead of 'staff_name'
+                strncpy(temp_name, current->name, sizeof(temp_name));
+                strncpy(current->name, next_node->name, sizeof(current->name));
+                strncpy(next_node->name, temp_name, sizeof(next_node->name));
+
+                strncpy(temp_department, current->department, sizeof(temp_department));
+                strncpy(current->department, next_node->department, sizeof(current->department));
+                strncpy(next_node->department, temp_department, sizeof(next_node->department));
+
+                strncpy(temp_position, current->position, sizeof(temp_position));
+                strncpy(current->position, next_node->position, sizeof(current->position));
+                strncpy(next_node->position, temp_position, sizeof(next_node->position));
+            }
+        }
+    }
+}
+
+// Get the total number of staff members
+int getTotalStaffCount(struct staff* head) {
     int count = 0;
-    struct staff* temp = head;
-    while (temp) {
+    struct staff* current = head;
+    while (current != NULL) {
         count++;
-        temp = temp->next;
+        current = current->next;
     }
     return count;
 }
